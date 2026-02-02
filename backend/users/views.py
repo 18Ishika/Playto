@@ -26,3 +26,13 @@ def leaderboard(request):
     users = User.objects.order_by('-points', 'date_joined')[:10]
     serializer = UserSerializer(users, many=True)
     return Response(serializer.data)
+
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from .serializers import RegisterSerializer
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [AllowAny] # Anyone can sign up
+    serializer_class = RegisterSerializer
