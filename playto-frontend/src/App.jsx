@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import Auth from "./pages/auth";
+import PostDetail from "./pages/postdetail"; // 1. Import the new page
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 1. Theme Logic
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -17,7 +17,6 @@ function App() {
     }
   }, [darkMode]);
 
-  // 2. Check for logged in user on mount
   useEffect(() => {
     const savedUser = localStorage.getItem("username");
     const token = localStorage.getItem("access");
@@ -28,12 +27,11 @@ function App() {
     setLoading(false);
   }, []);
 
-  if (loading) return null; // Prevent flicker on reload
+  if (loading) return null;
 
   return (
     <Router>
       <Routes>
-        {/* Home Route: Pass setUser so Navbar can handle Logout */}
         <Route 
           path="/" 
           element={
@@ -45,14 +43,26 @@ function App() {
             />
           } 
         />
+
+        {/* 2. Add the Post Detail Route */}
+        <Route 
+          path="/post/:id" 
+          element={
+            <PostDetail 
+              darkMode={darkMode} 
+              setDarkMode={setDarkMode} 
+              user={user} 
+              setUser={setUser} 
+            />
+          } 
+        />
         
-        {/* Auth Route: Redirect to home if user is already logged in */}
         <Route 
           path="/auth" 
           element={
             user ? <Navigate to="/" /> : <Auth setUser={setUser} />
           } 
-        / >
+        />
       </Routes>
     </Router>
   );
