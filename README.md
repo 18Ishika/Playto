@@ -1,41 +1,42 @@
-# Playto
+---
 
-# 🚀 Playto Community Feed Prototype
+# 🚀 Playto – Community Feed Prototype
 
 A high-performance **community feed system** built using **Django REST Framework** and **React**.
-This project focuses on solving real backend challenges like **N+1 queries, concurrency issues, and complex leaderboard aggregation**, while keeping the frontend clean and responsive.
+
+This project focuses on solving real backend challenges such as **N+1 queries, concurrency control, and complex leaderboard aggregation**, while maintaining a clean and responsive frontend.
 
 ---
 
 ## 🌐 Live Demo
 
-👉 [Add deployed link here]
+👉 []
 
 ---
 
 ## 🛠 Tech Stack
 
-**Backend**
+### Backend
 
 * Django
 * Django REST Framework
 
-**Frontend**
+### Frontend
 
 * React (Vite)
 * Tailwind CSS
 * Lucide Icons
 
-**Database**
+### Database
 
 * PostgreSQL (Production)
 * SQLite (Development)
 
-**State Management**
+### State Management
 
 * React Hooks
 
-**Live Updates**
+### Live Updates
 
 * Background Polling
 
@@ -43,67 +44,79 @@ This project focuses on solving real backend challenges like **N+1 queries, conc
 
 ## ✨ Key Features & Technical Decisions
 
-### 1️⃣ Threaded Discussions (Avoiding N+1 Queries)
+---
 
-Nested comments are supported with unlimited depth.
+### 1️⃣ Threaded Discussions (N+1 Query Optimization)
 
-To avoid performance issues:
+Supports unlimited nested comments.
 
-* Used `prefetch_related` for fetching related comments
-* Implemented recursive serializers in DRF
-* Rendered nested threads recursively in React
+**Optimizations:**
 
-This ensures that the entire comment tree loads efficiently without triggering extra database queries.
+* `prefetch_related` for bulk fetching
+* Recursive DRF serializers
+* Recursive rendering in React
+
+**Result:**
+Entire comment trees load efficiently with minimal database queries.
 
 ---
 
-### 2️⃣ Dynamic Leaderboard (Last 24h Karma)
+### 2️⃣ Dynamic Leaderboard (24-Hour Karma System)
 
-The leaderboard shows **karma earned in the last 24 hours**, not a stored static value.
+The leaderboard displays **karma earned in the last 24 hours**.
 
-**How it works:**
+**Implementation:**
 
-* Uses Django’s `Sum()` with time-based filters
-* Calculates karma dynamically from the `Like` model
-* Indexes applied on timestamp and user fields for performance
+* Django `Sum()` with time-based filters
+* `Case/When` aggregations
+* Indexed timestamp and user fields
 
-This keeps the leaderboard accurate and scalable.
-
----
-
-### 3️⃣ Handling Concurrency & Race Conditions
-
-To prevent duplicate likes and incorrect karma:
-
-* Added `UniqueTogether` constraint (User + Post/Comment)
-* Used Django `F()` expressions
-* Wrapped updates in atomic transactions
-
-This guarantees data consistency even under high traffic.
+**Design Choice:**
+Karma is calculated dynamically from like history instead of being stored, ensuring accuracy and integrity.
 
 ---
 
-### 4️⃣ Background Data Sync
+### 3️⃣ Concurrency & Data Integrity
 
-To keep the feed updated:
+Prevents race conditions and duplicate likes.
 
-* Implemented polling every 30 seconds
-* No UI interruption during refresh
-* Loading indicator only on first load
+**Techniques Used:**
 
-This gives a near real-time experience without WebSockets.
+* `UniqueTogether` constraint (User + Post/Comment)
+* `F()` expressions
+* Atomic transactions
+
+**Result:**
+Ensures consistent karma and prevents double-like scenarios under high load.
+
+---
+
+### 4️⃣ Background Data Synchronization
+
+Keeps the feed updated without disrupting user experience.
+
+**Features:**
+
+* Polling every 30 seconds
+* Smooth background refresh
+* Loader only on initial load
+
+Provides near real-time updates without WebSocket complexity.
 
 ---
 
 ## 📥 Local Setup
+
+---
 
 ### Backend Setup
 
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate   # Mac/Linux
-venv\Scripts\activate      # Windows
+source venv/bin/activate    # Mac/Linux
+venv\Scripts\activate       # Windows
+
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
@@ -121,33 +134,37 @@ npm run dev
 
 ---
 
-## 🧪 Running Tests
+## ▶️ How to Run
 
-To test the karma and post logic:
+Open two terminals:
+
+### Terminal 1 (Backend)
 
 ```bash
-python manage.py test posts.tests
+python manage.py runserver
+```
+
+### Terminal 2 (Frontend)
+
+```bash
+npm run dev
+```
+
+Then open:
+
+```
+http://localhost:5173
 ```
 
 ---
 
-## 📄 Project Explanation
+## 📄 Project Documentation
 
 Detailed technical explanations are available in:
 
 👉 `EXPLAINER.md`
 
-Includes:
-
-* Database schema design
-* Thread modeling
-* Query optimization
-* Leaderboard logic
-* AI-assisted development review
 
 ---
 
-
-
----
 
