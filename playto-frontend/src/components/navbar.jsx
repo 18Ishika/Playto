@@ -1,16 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
-import { User, LogOut, PlusCircle } from "lucide-react"; 
+import { Link, useNavigate, useLocation } from "react-router-dom"; // Added useLocation
+import { User, LogOut, PlusCircle, Home } from "lucide-react"; // Added Home icon
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom"; 
 import CreatePost from "./createpost";
 
 function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
   const navigate = useNavigate();
+  const location = useLocation(); // Useful if you want to hide the icon when already on home
   const [showDropdown, setShowDropdown] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -24,7 +24,7 @@ function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
   const handleLogout = () => {
     localStorage.clear();
     setUser(null);
-    setShowDropdown(false); // Close dropdown on logout
+    setShowDropdown(false);
     navigate('/auth');
   };
 
@@ -32,22 +32,41 @@ function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
     <>
       <nav className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-black/80 backdrop-blur-md sticky top-0 z-50 transition-colors">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-black text-blue-600 tracking-tighter">
-            PLAYTO
-          </Link>
           
+          {/* LEFT SECTION: Logo & Home Button */}
+          <div className="flex items-center gap-4">
+            <Link to="/" className="text-2xl font-black text-blue-600 tracking-tighter hover:opacity-80 transition-opacity">
+              PLAYTO
+            </Link>
+            
+            {/* Dedicated Home Icon - subtle divider added */}
+            <div className="h-6 w-[1px] bg-gray-200 dark:bg-gray-800 hidden sm:block"></div>
+            
+            <Link 
+              to="/" 
+              className={`p-2 rounded-xl transition-all ${
+                location.pathname === "/" 
+                ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" 
+                : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+              }`}
+              title="Home"
+            >
+              <Home size={22} />
+            </Link>
+          </div>
+          
+          {/* RIGHT SECTION: Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
             {/* Theme Toggle */}
             <button 
               onClick={() => setDarkMode(!darkMode)} 
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-400"
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-xl"
             >
               {darkMode ? "☀️" : "🌙"}
             </button>
 
             {user ? (
               <div className="flex items-center gap-3 sm:gap-4">
-                {/* Create Post Icon Button */}
                 <button 
                   onClick={() => setShowModal(true)}
                   className="flex items-center gap-1 p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all"
@@ -72,7 +91,6 @@ function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
                         <p className="text-sm font-bold dark:text-white truncate">@{user}</p>
                       </div>
                       
-                      {/* CHANGED: This is now a Link that points to /profile */}
                       <Link 
                         to="/profile"
                         onClick={() => setShowDropdown(false)}
@@ -94,7 +112,7 @@ function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
             ) : (
               <Link 
                 to="/auth" 
-                className="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/30 transition-all"
+                className="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-blue-700 transition-all"
               >
                 Sign In
               </Link>
@@ -103,7 +121,6 @@ function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
         </div>
       </nav>
 
-      {/* Modal rendered OUTSIDE nav using portal */}
       {showModal && createPortal(
         <CreatePost 
           onClose={() => setShowModal(false)} 
