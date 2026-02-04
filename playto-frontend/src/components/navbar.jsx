@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { User, LogOut, PlusCircle } from "lucide-react"; 
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom"; // Add this import
+import { createPortal } from "react-dom"; 
 import CreatePost from "./createpost";
 
 function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
@@ -24,6 +24,7 @@ function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
   const handleLogout = () => {
     localStorage.clear();
     setUser(null);
+    setShowDropdown(false); // Close dropdown on logout
     navigate('/auth');
   };
 
@@ -65,15 +66,20 @@ function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
                   </button>
 
                   {showDropdown && (
-                    <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl py-2 z-50 overflow-hidden">
+                    <div className="absolute right-0 mt-3 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl py-2 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                       <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
                         <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Account</p>
                         <p className="text-sm font-bold dark:text-white truncate">@{user}</p>
                       </div>
                       
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-3 transition-colors">
+                      {/* CHANGED: This is now a Link that points to /profile */}
+                      <Link 
+                        to="/profile"
+                        onClick={() => setShowDropdown(false)}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-3 transition-colors"
+                      >
                         <User size={16} /> Profile
-                      </button>
+                      </Link>
                       
                       <button 
                         onClick={handleLogout}
@@ -97,13 +103,13 @@ function Navbar({ darkMode, setDarkMode, user, setUser, onPostCreated }) {
         </div>
       </nav>
 
-      {/* Modal rendered OUTSIDE nav using portal - this is the fix! */}
+      {/* Modal rendered OUTSIDE nav using portal */}
       {showModal && createPortal(
         <CreatePost 
           onClose={() => setShowModal(false)} 
           onPostCreated={onPostCreated} 
         />,
-        document.body // Render directly to body, bypassing nav's stacking context
+        document.body 
       )}
     </>
   );

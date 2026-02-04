@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import feed, create_post , toggle_like , post_detail , leaderboard
+from .views import feed, create_post , toggle_like , post_detail , leaderboard ,delete_post
 
 urlpatterns = [
     path('', feed),               # GET /posts/
@@ -7,5 +7,7 @@ urlpatterns = [
     path('feed/', feed),
     path('postdetail/<int:pk>/', post_detail),
     path('<int:post_id>/like/', toggle_like),
-    path('leaderboard/',leaderboard)
+    path('leaderboard/',leaderboard),
+    path('<int:post_id>/delete/', delete_post),
 ]
+

@@ -1,8 +1,14 @@
 from rest_framework import serializers
 from .models import User
+from posts.serializers import PostSerializer  # Import this to nest posts
 
 class UserSerializer(serializers.ModelSerializer):
-    recent_karma = serializers.IntegerField(read_only=True)
+    # default=0 prevents errors if recent_karma isn't annotated in the queryset
+    recent_karma = serializers.IntegerField(read_only=True, default=0)
+    
+    # This maps the 'related_name="posts"' from your Post model
+    posts = PostSerializer(many=True, read_only=True)
+
     class Meta:
         model = User
         fields = [
@@ -11,11 +17,9 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'points',
             'recent_karma',
+            'posts',        # Added to show posts in profile
             'date_joined',
         ]
-
-from rest_framework import serializers
-from .models import User
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -25,9 +29,4 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'password']
 
     def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            password=validated_data['password']
-        )
-        return user
+        return User.objects.create_user(**validated_data)

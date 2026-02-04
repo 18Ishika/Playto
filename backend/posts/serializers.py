@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Post, Like
-from users.serializers import UserSerializer
+
 
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()

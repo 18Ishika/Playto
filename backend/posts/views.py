@@ -17,8 +17,38 @@ from django.db.models import Sum, Case, When, IntegerField, Q
 from django.db.models.functions import Coalesce
 
 User = get_user_model()
+# posts/views.py
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Post
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .models import Post
 
-# -------------------------------
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_post(request, post_id):
+    """
+    Deletes a post if the user is the author.
+    """
+    # Look for the post, return 404 if it doesn't exist
+    post = get_object_or_404(Post, pk=post_id)
+    
+    # Permission check: Only the author can delete
+    if post.author != request.user:
+        return Response(
+            {"error": "You do not have permission to delete this post."}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    post.delete()
+    return Response({"message": "Post deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 # 1. Feed View (Top-level only)
 # -------------------------------
 @api_view(['GET'])
@@ -157,3 +187,5 @@ def leaderboard(request):
     # Pass the annotated field to the serializer
     serializer = UserSerializer(top_users, many=True)
     return Response(serializer.data)
+
+    
