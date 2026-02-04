@@ -10,7 +10,7 @@ This project focuses on solving real backend challenges such as **N+1 queries, c
 
 ## 🌐 Live Demo
 
-👉 []
+In progress
 
 ---
 
@@ -158,9 +158,7 @@ http://localhost:5173
 
 ---
 
-## 📄 Project Documentation
-
-Detailed technical explanations are available in:
+For more details check out :
 
 👉 `EXPLAINER.md`
 
