@@ -12,28 +12,35 @@ function Home({ darkMode, setDarkMode, user, setUser }) {
   
   const isLoggedIn = !!user;
 
-  // Added replies_count to dummy data so the UI remains consistent
+  // Placeholder data for logged-out users
   const dummyPosts = [
     { 
       id: "d1", 
-      author: { username: "CodingWizard" }, 
+      author: { username: "CodingWizard", points: 120 }, 
       content: "Just started my first React project... 🚀", 
       created_at: new Date().toISOString(),
       likes_count: 12,
-      replies_count: 5, // Now visible on the feed!
+      replies_count: 5,
       is_liked_by_user: false,
       parent: null,
-      replies: []
     }
   ];
 
-  const fetchData = async (isMounted) => {
+  /**
+   * Fetches both Posts and Leaderboard in parallel.
+   * Using Promise.all ensures the loading state ends only when both are ready.
+   */
+  const fetchAllData = async (isMounted = true) => {
     try {
-      const postRes = await api.get(isLoggedIn ? '/posts/' : '/posts/dummy/'); 
-      if (isMounted) setPosts(postRes.data);
+      const [postRes, lbRes] = await Promise.all([
+        api.get(isLoggedIn ? '/posts/' : '/posts/dummy/'),
+        api.get('/posts/leaderboard/')
+      ]);
 
-      const lbRes = await api.get('/leaderboard/');
-      if (isMounted) setLeaderboard(lbRes.data);
+      if (isMounted) {
+        setPosts(postRes.data);
+        setLeaderboard(lbRes.data);
+      }
     } catch (err) {
       console.error("Data fetch error:", err);
     } finally {
@@ -41,19 +48,27 @@ function Home({ darkMode, setDarkMode, user, setUser }) {
     }
   };
 
+  // Initial load and re-fetch when login status changes
   useEffect(() => {
     let isMounted = true;
-    fetchData(isMounted);
+    setIsLoading(true);
+    fetchAllData(isMounted);
     return () => { isMounted = false; };
   }, [isLoggedIn]);
 
+  /**
+   * Handlers for child components
+   */
   const handlePostCreated = (newPost) => {
     if (!newPost.parent) {
+      // Optimistically add to top level if it's a post
       setPosts((prevPosts) => [newPost, ...prevPosts]);
     } else {
+      // Navigate to detail if it's a reply
       navigate(`/post/${newPost.parent}`);
     }
-    fetchData(true); 
+    // Refresh leaderboard as posting grants karma
+    fetchAllData(true); 
   };
 
   return (
@@ -79,7 +94,6 @@ function Home({ darkMode, setDarkMode, user, setUser }) {
 
           <section className="space-y-4">
             {isLoading ? (
-              // Show a few skeleton loaders
               <>
                 <PostCard isLoading={true} />
                 <PostCard isLoading={true} />
@@ -91,9 +105,9 @@ function Home({ darkMode, setDarkMode, user, setUser }) {
                     post={post} 
                     isLoading={false} 
                     user={user} 
-                    isDetailView={false} // Show Reply Count, View Thread, and Arrow
-                    onCommentSuccess={() => fetchData(true)}
-                    onLikeSuccess={() => fetchData(true)}
+                    isDetailView={false}
+                    onCommentSuccess={() => fetchAllData(true)}
+                    onLikeSuccess={() => fetchAllData(true)}
                   />
                 </div>
               ))
@@ -132,7 +146,9 @@ function Home({ darkMode, setDarkMode, user, setUser }) {
                       </span>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="text-orange-500 font-bold">+{u.recent_karma}</span>
+                      <span className="text-orange-500 font-bold">
+                        +{u.recent_karma || 0}
+                      </span>
                       <span className="text-[10px] text-gray-400 uppercase tracking-tighter">Karma</span>
                     </div>
                   </div>

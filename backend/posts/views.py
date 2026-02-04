@@ -13,6 +13,9 @@ from .models import Post, Like
 from .serializers import PostSerializer
 from django.contrib.auth import get_user_model
 
+from django.db.models import Sum, Case, When, IntegerField, Q
+from django.db.models.functions import Coalesce
+
 User = get_user_model()
 
 # -------------------------------
@@ -124,31 +127,33 @@ def toggle_like(request, post_id):
         "is_liked_by_user": current_status == "liked"
     })
 
-# -------------------------------
-# 5. 24-Hour Leaderboard
-# -------------------------------
 @api_view(['GET'])
 def leaderboard(request):
     """
     Constraint: Top 5 Users based on Karma earned in the last 24h window.
+    Calculated dynamically from Like activity.
     """
     time_threshold = timezone.now() - timedelta(hours=24)
 
-    # Use aggregation to calculate karma from likes received within the window
     top_users = User.objects.annotate(
-        recent_karma=Sum(
-            Case(
-                When(posts__likes__created_at__gte=time_threshold, 
-                     posts__parent__isnull=True, then=5),
-                When(posts__likes__created_at__gte=time_threshold, 
-                     posts__parent__isnull=False, then=1),
-                default=0,
-                output_field=IntegerField(),
-            )
+        recent_karma=Coalesce(
+            Sum(
+                Case(
+                    # If the like is on a Post (parent is null) -> 5 points
+                    When(posts__likes__created_at__gte=time_threshold, 
+                         posts__parent__isnull=True, then=5),
+                    # If the like is on a Comment (parent is not null) -> 1 point
+                    When(posts__likes__created_at__gte=time_threshold, 
+                         posts__parent__isnull=False, then=1),
+                    default=0,
+                    output_field=IntegerField(),
+                )
+            ),
+            0
         )
-    ).order_by('-recent_karma')[:5]
+    ).filter(recent_karma__gt=0).order_by('-recent_karma')[:5]
 
-    # Dynamically import to avoid circular dependency if necessary
     from users.serializers import UserSerializer
+    # Pass the annotated field to the serializer
     serializer = UserSerializer(top_users, many=True)
     return Response(serializer.data)

@@ -8,11 +8,12 @@ class PostSerializer(serializers.ModelSerializer):
     replies_count = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(source='likes.count', read_only=True)
     is_liked_by_user = serializers.SerializerMethodField()
+    recent_karma = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Post
         fields = [
-            'id', 'author', 'content', 'parent', 
+            'id', 'author', 'content', 'parent', 'recent_karma',
             'replies','replies_count', 'created_at', 'likes_count', 'is_liked_by_user'
         ]
     def get_replies_count(self, obj):

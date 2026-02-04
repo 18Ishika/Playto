@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
+    recent_karma = serializers.IntegerField(read_only=True)
     class Meta:
         model = User
         fields = [
@@ -9,6 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'email',
             'points',
+            'recent_karma',
             'date_joined',
         ]
 
